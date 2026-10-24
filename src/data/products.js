@@ -25,7 +25,7 @@
     return r;
   }
 
-  export const products = [
+  const staticProducts = [
     p({
       id: "rouge",
       colorLabel: "Rouge",
@@ -162,3 +162,39 @@
       ],
     }),
   ];
+
+  /**
+   * Lit la table `products` (collection « zman », actifs, triés par `sort_order`) et superpose
+   * nom, prix, prix barré et pastille « nouveau » aux données éditoriales ci-dessus (galerie, textes, ids).
+   * Si la base est injoignable ou vide, on garde les données statiques.
+   */
+  async function fromDb() {
+    var url = import.meta.env.PUBLIC_SUPABASE_URL, key = import.meta.env.PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    if (!url || !key) return null;
+    try {
+      var res = await fetch(url + "/rest/v1/products?select=slug,name,price,was_price,is_new,sort_order&collection=eq.zman&active=eq.true&order=sort_order", {
+        headers: { apikey: key, Authorization: "Bearer " + key },
+        credentials: "omit",
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) return null;
+      var rows = await res.json();
+      var out = [];
+      rows.forEach(function (row) {
+        var base = staticProducts.filter(function (b) { return b.slug === row.slug; })[0];
+        if (!base) return; // produit sans page/galerie : ignoré
+        var r = {};
+        for (var k in base) r[k] = base[k];
+        r.name = row.name;
+        r.price = Number(row.price);
+        r.referencePrice = row.was_price != null ? Number(row.was_price) : null;
+        r.isNew = !!row.is_new;
+        out.push(r);
+      });
+      return out.length ? out : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  export const products = (await fromDb()) || staticProducts;

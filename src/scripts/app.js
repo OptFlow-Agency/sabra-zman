@@ -2,7 +2,7 @@ import { config as C } from "../data/config.js";
 import { products as P } from "../data/products.js";
 import * as L from "../lib/logic.js";
 import { analytics as A } from "../lib/events.js";
-import { supabaseReady, placeOrder } from "../lib/supabase.js";
+import { supabaseReady, placeOrder, checkPromo } from "../lib/supabase.js";
 import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
 
 (function () {
@@ -147,14 +147,51 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
     for (var i = 0; i < o.qty; i++) { var p = byId(state.bags[i]); out.push(p ? p.price : ref); }
     return out;
   }
-  function offerTotal(o) { return L.computeOrder(bagPrices(o), o.discountPercent, C.shipping.cost); }
+  /* Codes promo : le pourcentage et le montant viennent de la base (apply_promo), pas de la config.
+     Config = repli si Supabase est absent ou injoignable. Un code absent / inactif / non valable pour ces sacs masque l'offre. */
+  var promoCache = {}; // "CODE|id,id" → { percent, discount } | null (refusé) | "err" (injoignable)
+  function bagIds(o) { var ids = []; for (var i = 0; i < o.qty; i++) ids.push(state.bags[i] || state.modelId); return ids; }
+  function promoKey(o) { return o.code + "|" + bagIds(o).join(","); }
+  function promoOf(o) { return o.code && supabaseReady ? promoCache[promoKey(o)] : undefined; }
+  function offerAvailable(o) { return promoOf(o) !== null; }
+  function offerPercent(o) { var r = promoOf(o); return r && r !== "err" ? r.percent : o.discountPercent; }
+  function ensurePromos() {
+    OFFERS.forEach(function (o) {
+      if (!o.code || !supabaseReady) return;
+      var key = promoKey(o); if (key in promoCache) return;
+      promoCache[key] = undefined; var ctrl = new AbortController(), to = setTimeout(function () { ctrl.abort(); }, C.order.timeoutMs);
+      checkPromo(o.code, bagIds(o), ctrl.signal).then(function (r) { promoCache[key] = r; }, function () { promoCache[key] = "err"; })
+        .then(function () { clearTimeout(to); if (!OFFERS.some(function (x) { return promoKey(x) === key; })) return; promosChanged(); });
+    });
+  }
+  /** Un résultat serveur est arrivé : offre masquée si le code est refusé, textes et totaux recalculés. */
+  function promosChanged() {
+    if (!offerAvailable(curOffer())) state.offerId = defaultOfferId();
+    renderOffers(); syncForm(); syncFaqOffer();
+  }
+  function syncFaqOffer() {
+    var d = OFFERS.filter(function (o) { return o.code; })[0]; if (!d) return;
+    $$("#faq-list details").forEach(function (el) {
+      if (el.querySelector("summary").textContent.indexOf("Comment fonctionne l’offre") !== 0) return;
+      el.hidden = !offerAvailable(d); var t = offerTotal(d);
+      el.querySelector("p").innerHTML = "Vous choisissez " + d.qty + " sacs Z’man, dans la même couleur ou dans deux couleurs différentes. " + shipFrag + " et " + offerPercent(d) + "% de réduction automatique" + (d.code ? " (code " + esc(d.code) + " appliqué)" : "") + " : " + money(t.total) + " au lieu de " + money(t.subtotal) + ".";
+    });
+  }
+  function offerTotal(o) {
+    var r = promoOf(o), prices = bagPrices(o);
+    if (r && r !== "err") { // montant calculé par le serveur pour exactement ces sacs
+      var sub = prices.reduce(function (a, b) { return a + b; }, 0), ship = Number(C.shipping.cost) || 0;
+      return { quantity: prices.length, subtotal: sub, discountPercent: r.percent, discount: r.discount, shipping: ship, total: sub - r.discount + ship };
+    }
+    return L.computeOrder(prices, o.discountPercent, C.shipping.cost);
+  }
 
   function renderOffers() {
-    $("#offer-list").innerHTML = OFFERS.map(function (o) {
+    $("#offer-list").innerHTML = OFFERS.filter(offerAvailable).map(function (o) {
       var t = offerTotal(o), unit = byId(state.modelId).price, id = "offer-" + o.id, lines;
-      if (o.discountPercent > 0) {
+      if (offerPercent(o) > 0) {
         lines = '<span class="offer-line">' + o.qty + " Sacs Z’man au choix.</span>" +
-          '<span class="offer-line offer-adv"><b>Avantage :</b> ' + shipFrag + " + " + o.discountPercent + "% de réduction automatique" + (o.code ? " (Code : " + esc(o.code) + " appliqué)" : "") + ".</span>" +
+          '<span class="offer-line offer-adv"><b>Avantage :</b> ' + shipFrag + " + " + offerPercent(o) + "% de réduction automatique" + (o.code ? " (Code : " + esc(o.code) + " appliqué)" : "") + ".</span>" +
           '<span class="offer-line offer-est">Total estimé : <b class="offer-total">' + money(t.total) + '</b> au lieu de <s>' + money(t.subtotal) + "</s>.</span>";
       } else {
         lines = '<span class="offer-line">' + o.qty + " Sac Z’man au choix : <b>" + money(unit * o.qty) + "</b> (+ " + shipFrag + ").</span>";
@@ -180,6 +217,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
 
   /** Source unique d'affichage du formulaire : offre cochée, 1 ou 2 sélecteurs, couleurs cochées, récapitulatif. */
   function syncForm() {
+    ensurePromos();
     var o = curOffer();
     $$('input[name="offer"]').forEach(function (i) { i.checked = i.value === o.id; });
     $("#bag-set-2").hidden = o.qty < 2;
@@ -205,7 +243,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
     var disc = t.discount > 0;
     $("#t-sub-row").hidden = !disc; $("#t-disc-row").hidden = !disc;
     $("#t-sub").innerHTML = money(t.subtotal);
-    $("#t-disc-label").textContent = "Réduction " + o.discountPercent + "%" + (o.code ? " (" + o.code + " appliqué)" : "");
+    $("#t-disc-label").textContent = "Réduction " + offerPercent(o) + "%" + (o.code ? " (" + o.code + " appliqué)" : "");
     $("#t-disc").innerHTML = "−" + money(t.discount);
     $("#t-ship").textContent = freeShip ? "0 MAD (offerte)" : "Selon la ville — à confirmer";
     $("#t-total").innerHTML = money(t.total);
@@ -285,10 +323,14 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
     var o = curOffer(), ps = selectedProducts();
     var btn = $("#submit-btn");
     state.submitting = true; btn.disabled = true; btn.textContent = "ENVOI EN COURS…";
-    capture(o, ps, data);
-    // L'offre exclusive s'affiche AVANT l'enregistrement : la commande part (une seule fois) à la fin de ce parcours.
-    if (session.upsell.status === "pending") { state.submitting = false; return go("upsell"); }
-    finalize(fail);
+    // L'offre exclusive n'est proposée que si la base reconnaît le code pour au moins une couleur.
+    var wantUp = U.enabled && o.id === U.triggerOfferId && o.qty === 1 && ps.length === 1;
+    (wantUp && upLive() ? loadUpPromos(ps[0].id) : Promise.resolve()).then(function () {
+      capture(o, ps, data, true);
+      // L'offre exclusive s'affiche AVANT l'enregistrement : la commande part (une seule fois) à la fin de ce parcours.
+      if (session.upsell.status === "pending") { state.submitting = false; return go("upsell"); }
+      finalize(fail);
+    });
   }
   function fail(msg) {
     state.submitting = false; var b = $("#submit-btn"); b.disabled = false; b.textContent = "CONFIRMER MA COMMANDE";
@@ -303,7 +345,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
   }
 
   /** Mémorise la commande validée (rien n'est encore envoyé) et prépare l'upsell éventuel. */
-  function capture(o, ps, data) {
+  function capture(o, ps, data, upOk) {
     state.done = true;
     var simulated = !supabaseReady;
     var n = L.normalizePhone(data.phone);
@@ -311,12 +353,12 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
       clientOrderId: state.clientOrderId, orderRef: "", simulated: simulated, placed: simulated,
       customer: simulated ? null : customerOf(data),
       firstName: String(data.fullName).trim().split(/\s+/)[0] || "", phoneMasked: /^\d{10}$/.test(n) ? n.slice(0, 2) + " •• •• •• " + n.slice(8) : "",
-      offerId: o.id, offerTitle: noDot(o.title), offerPct: o.discountPercent, offerCode: o.code || "",
+      offerId: o.id, offerTitle: noDot(o.title), offerPct: offerPercent(o), offerDiscount: promoOf(o) && promoOf(o) !== "err" ? offerTotal(o).discount : null, offerCode: o.code || "",
       bags: ps.map(function (p) { return p.id; }), upsell: { status: "none" },
     };
     // Upsell UNIQUEMENT si : offre 1 choisie + une couleur choisie. En production, la réduction du 2e sac doit exister côté base
     // (code promo `upsell.code`) : sans ce code, l'offre n'est pas proposée (le serveur facturerait le plein tarif).
-    var eligible = !!(U.enabled && (U.code || simulated) && o.id === U.triggerOfferId && o.qty === 1 && ps.length === 1);
+    var eligible = !!(U.enabled && upOk && (U.code || simulated) && o.id === U.triggerOfferId && o.qty === 1 && ps.length === 1);
     if (eligible) session.upsell = { status: "pending", deadline: Date.now() + (U.durationSeconds || 300) * 1000 };
     saveSession();
   }
@@ -408,17 +450,58 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
   /* --- Upsell --- */
   function upChoiceId() { var r = $('input[name="upcolor"]:checked'); return r ? r.value : null; }
 
+  /* Upsell réel : le code `U.code` ne s'applique qu'au 2e sac (apply_promo interrogée avec ce seul sac) ; le pourcentage et le montant
+     viennent de la base. Sans Supabase (démo), l'ancien calcul « 2e sac à −X % » de la config est conservé. */
+  var upCache = {}; // "id1,id2" → { percent, discount } | null (refusé) | "err"
+  function upLive() { return supabaseReady && !!U.code; }
+  function upPromo(a, b) { return upLive() ? upCache[a + "," + b] : undefined; }
+  function upValid(r) { return !!r && r !== "err"; }
+  var allIds = function () { return P.map(function (p) { return p.id; }); };
+  /** Couleurs proposées : toutes sauf celle déjà commandée. */
+  function upChoices(firstId) { return L.upsellChoices(allIds(), firstId); }
+  function upMissing(firstId) { return L.upsellChoices(allIds(), firstId).some(function (id) { return !((firstId + "," + id) in upCache); }); }
+  function loadUpPromos(firstId) {
+    return Promise.all(L.upsellChoices(allIds(), firstId).map(function (id) {
+      var key = firstId + "," + id; if (key in upCache) return;
+      var ctrl = new AbortController(), to = setTimeout(function () { ctrl.abort(); }, C.order.timeoutMs);
+      return checkPromo(U.code, [id], ctrl.signal).then(function (r) { upCache[key] = r; }, function () { upCache[key] = "err"; }).then(function () { clearTimeout(to); });
+    }));
+  }
+  function upTotals(firstId, secondId) {
+    var f = byId(firstId), sc = byId(secondId), ship = C.shipping.cost, r = upPromo(firstId, secondId);
+    if (upValid(r)) {
+      var sub = f.price + sc.price;
+      return { firstPrice: f.price, secondPrice: sc.price, secondNet: sc.price - r.discount, discountPercent: r.percent, discount: r.discount, subtotal: sub, shipping: ship, total: sub - r.discount + ship };
+    }
+    if (upLive()) { // la base n'a pas confirmé le code : estimation locale sur toute la commande (le serveur fait foi à l'enregistrement)
+      var o = L.computeOrder([sc.price], U.orderPercent, ship);
+      return { firstPrice: f.price, secondPrice: sc.price, secondNet: sc.price - o.discount, discountPercent: o.discountPercent, discount: o.discount, subtotal: f.price + sc.price, shipping: ship, total: f.price + sc.price - o.discount + ship };
+    }
+    var t = L.computeUpsell(f.price, sc.price, U.discountPercent, ship); t.discountPercent = U.discountPercent; return t;
+  }
+  /** Totaux d'une commande avec upsell accepté, à partir de la session (montant serveur mémorisé si présent). */
+  function upTotalsOf(s, ship) {
+    var f = priceOf(s.bags[0]), sc = priceOf(s.bags[1]);
+    if (s.upsell.discount != null) { var sub = f + sc; return { subtotal: sub, discount: s.upsell.discount, shipping: ship, total: sub - s.upsell.discount + ship }; }
+    return L.computeUpsell(f, sc, s.upsell.pct, ship);
+  }
+
   function renderUpsell() {
+    if (upLive() && upMissing(session.bags[0])) { // rechargement de page : on relit la base
+      return loadUpPromos(session.bags[0]).then(function () { if (curView === "upsell") renderUpsell(); });
+    }
     var s = session, first = byId(s.bags[0]);
     $("#up-sim").hidden = !s.simulated;
-    $("#up-pct").textContent = "−" + U.discountPercent + " %";
+    var pctOf = upTotals(s.bags[0], upChoices(s.bags[0])[0]).discountPercent;
+    if (upLive()) $("#up-title").innerHTML = "Un 2<sup>e</sup> sac Z’man à <span id=\"up-pct\"></span>, rien que pour vous.";
+    $("#up-pct").textContent = "−" + pctOf + " %";
     $("#up-current").innerHTML = '<img src="' + first.thumb + '" alt="" width="52" height="52"><span><small>Votre commande</small>' + esc(first.name) + " · " + nb(money(first.price)) + "</span>";
     // Les couleurs proposées excluent TOUJOURS celle déjà commandée sur la page principale.
-    var ids = L.upsellChoices(P.map(function (p) { return p.id; }), s.bags[0]);
+    var ids = upChoices(s.bags[0]);
     $("#up-grid").innerHTML = ids.map(function (id) {
-      var p = byId(id), n = L.computeUpsell(first.price, p.price, U.discountPercent, 0);
+      var p = byId(id), n = upTotals(s.bags[0], id);
       return '<div class="up-opt"><input class="offer-input" type="radio" name="upcolor" id="up-' + id + '" value="' + id + '">' +
-        '<label class="up-card" for="up-' + id + '"><span class="up-off">−' + U.discountPercent + "&nbsp;%</span>" +
+        '<label class="up-card" for="up-' + id + '"><span class="up-off">−' + n.discountPercent + "&nbsp;%</span>" +
         '<span class="up-img"><img src="' + p.thumb + '" alt="" width="240" height="240" loading="lazy" decoding="async"></span>' +
         '<span class="up-name">' + esc(p.formLabel || p.name) + '</span><span class="up-price"><s>' + money(p.price) + "</s><b>" + money(n.secondNet) + "</b></span></label></div>";
     }).join("");
@@ -432,7 +515,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
 
   function renderUpsellSummary() {
     var s = session, id = upChoiceId(), first = byId(s.bags[0]), second = id ? byId(id) : null;
-    var t = L.computeUpsell(first.price, second ? second.price : first.price, U.discountPercent, C.shipping.cost);
+    var t = upTotals(first.id, second ? second.id : upChoices(first.id)[0]);
     var li = function (img, label, name, price) {
       return '<li class="s-item">' + img + '<span class="s-txt"><span class="s-bag">' + label + '</span><span class="s-name">' + name + "</span></span>" + price + "</li>";
     };
@@ -440,9 +523,12 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
       li('<img src="' + first.thumb + '" alt="" width="52" height="52">', "Sac 1", esc(first.name), '<span class="s-price">' + nb(money(first.price)) + "</span>") +
       li(second ? '<img src="' + second.thumb + '" alt="" width="52" height="52">' : '<span class="s-empty" aria-hidden="true">?</span>',
          "Sac 2 · offre", second ? esc(second.name) : "Couleur à choisir",
-         '<span class="s-price"><s>' + nb(money(t.secondPrice)) + "</s>" + nb(money(t.secondNet)) + "</span>");
+         second ? '<span class="s-price"><s>' + nb(money(t.secondPrice)) + "</s>" + nb(money(t.secondNet)) + "</span>" : "");
+    // Sans 2e sac choisi : rien d'offert à chiffrer, on n'affiche que le 1er sac + livraison.
+    if (!second) t = { subtotal: first.price, discount: 0, total: first.price + t.shipping, shipping: t.shipping, discountPercent: t.discountPercent };
+    $(".t-disc", $("#view-upsell")).hidden = !second;
     $("#up-sub").innerHTML = money(t.subtotal);
-    $("#up-disc-label").textContent = "Offre exclusive −" + U.discountPercent + " %";
+    $("#up-disc-label").textContent = "Offre exclusive −" + t.discountPercent + " %";
     $("#up-disc").innerHTML = "−" + money(t.discount);
     $("#up-ship").textContent = freeShip ? "0 MAD (offerte)" : "Selon la ville — à confirmer";
     $("#up-total").innerHTML = money(t.total);
@@ -481,14 +567,15 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
       var f = $("#up-grid input"); if (f) f.focus(); return;
     }
     $("#e-up").hidden = true; $("#up-alert").hidden = true;
-    var first = byId(s.bags[0]), p = byId(id), t = L.computeUpsell(first.price, p.price, U.discountPercent, C.shipping.cost);
+    var p = byId(id), t = upTotals(s.bags[0], id);
     var btn = $("#up-accept");
-    s.bags.push(id); s.upsell.status = "accepted"; s.upsell.pct = U.discountPercent; s.upsell.secondId = id; saveSession();
+    s.bags.push(id); s.upsell.status = "accepted"; s.upsell.pct = t.discountPercent; s.upsell.discount = upLive() ? t.discount : null; s.upsell.secondId = id; saveSession();
     btn.setAttribute("aria-busy", "true"); btn.disabled = true; btn.textContent = "AJOUT EN COURS…";
     finalize(function (msg) {
       // échec : on revient à l'état « offre en cours » pour pouvoir réessayer tant que le compte à rebours court
-      s.bags.pop(); s.upsell.status = "pending"; delete s.upsell.pct; delete s.upsell.secondId; saveSession();
-      btn.removeAttribute("aria-busy"); btn.disabled = false; renderUpsellSummary(); finalError(msg);
+      s.bags.pop(); s.upsell.status = "pending"; delete s.upsell.pct; delete s.upsell.discount; delete s.upsell.secondId; saveSession();
+      btn.removeAttribute("aria-busy"); btn.disabled = false; renderUpsellSummary();
+      finalError(/code de l’offre/.test(msg) ? "Cette offre exclusive n’est pas disponible pour le moment. Votre commande initiale est conservée : cliquez sur « Non merci » pour la confirmer." : msg);
     });
     trackFlow("UpsellAccepted", { content_ids: [String(p.wooProductId)], value: t.secondNet, currency: C.currency });
   }
@@ -503,16 +590,21 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
   /** Totaux FINAUX de la commande (upsell inclus) — source unique pour le récapitulatif et l'événement Purchase. */
   function finalTotals(s) {
     var ship = C.shipping.cost;
-    if (s.upsell && s.upsell.status === "accepted" && s.bags.length === 2) return L.computeUpsell(priceOf(s.bags[0]), priceOf(s.bags[1]), s.upsell.pct, ship);
-    return L.computeOrder(s.bags.map(priceOf), s.offerPct, ship);
+    if (s.upsell && s.upsell.status === "accepted" && s.bags.length === 2) return upTotalsOf(s, ship);
+    return offerTotals(s, ship);
+  }
+  function offerTotals(s, ship) {
+    var t = L.computeOrder(s.bags.map(priceOf), s.offerPct, ship);
+    if (s.offerDiscount != null) { t.discount = s.offerDiscount; t.total = t.subtotal - s.offerDiscount + t.shipping; }
+    return t;
   }
   function summaryRows(s) {
     var ship = C.shipping.cost, rows = [], t;
     if (s.upsell && s.upsell.status === "accepted" && s.bags.length === 2) {
-      t = L.computeUpsell(priceOf(s.bags[0]), priceOf(s.bags[1]), s.upsell.pct, ship);
+      t = upTotalsOf(s, ship);
       rows.push(["Sous-total", money(t.subtotal)], ["Offre exclusive −" + s.upsell.pct + " %", "−" + money(t.discount), "t-disc"]);
     } else {
-      t = L.computeOrder(s.bags.map(priceOf), s.offerPct, ship);
+      t = offerTotals(s, ship);
       if (t.discount > 0) rows.push(["Sous-total", money(t.subtotal)], ["Réduction " + s.offerPct + "%" + (s.offerCode ? " (" + s.offerCode + " appliqué)" : ""), "−" + money(t.discount), "t-disc"]);
     }
     rows.push(["Livraison", freeShip ? "0 MAD (offerte)" : "Selon la ville — à confirmer"], ["Total à payer", money(t.total), "t-total"], ["Paiement", "À la livraison (espèces)"]);

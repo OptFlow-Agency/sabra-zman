@@ -20,7 +20,7 @@ export const config = {
    * ------------------------------------------------------------------ */
   offers: [
     { id: "simple", qty: 1, title: "L’Élégance Simple.", discountPercent: 0, code: "", badge: "", defaultSelected: true },
-    { id: "duo", qty: 2, title: "Le Duo Signature", discountPercent: 10, code: "GIFT64", badge: "Recommandé" },
+    // Duo retiré du formulaire : le 2e sac est proposé uniquement sur la page « offre exclusive » (upsell) après la commande.
   ],
 
   /* ------------------------------------------------------------------ *
@@ -49,7 +49,8 @@ export const config = {
     triggerOfferId: "simple",
     discountPercent: 25, // 2e sac : 549 − 25 % = 411,75 → 411 MAD (arrondi inférieur) ; 1er + 2e sac = 960 MAD
     durationSeconds: 300, // 5 minutes
-    code: "",
+    orderPercent: 10, // estimation affichée si la base ne confirme pas (encore) le code ci-dessous
+    code: "GIFT64", // code promo Supabase : la base l'applique sur toute la commande de 2 sacs ; % et montant lus en base
   },
 
   /* ------------------------------------------------------------------ *

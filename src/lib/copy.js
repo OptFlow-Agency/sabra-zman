@@ -26,7 +26,7 @@ export function faqItems() {
   const allSame = P.every((p) => p.dimensions === P[0].dimensions && p.weight === P[0].weight);
   const wa = '<a href="' + waHref("Bonjour Maison Sabra, j’ai une question sur le sac Z’man.") + '" rel="noopener">WhatsApp</a>';
   return [
-    ["Comment commander mon sac Z’man ?", "Choisissez votre offre (1 sac ou le Duo Signature) et la couleur de chaque sac, remplissez le formulaire de cette page (nom, téléphone, ville, adresse) puis cliquez sur « Confirmer ma commande ». Pas de compte à créer, pas de paiement en ligne."],
+    ["Comment commander mon sac Z’man ?", "Choisissez la couleur de votre sac, remplissez le formulaire de cette page (nom, téléphone, ville, adresse) puis cliquez sur « Confirmer ma commande ». Pas de compte à créer, pas de paiement en ligne."],
     duoFaq(),
     ["Quels sont les moyens de paiement disponibles ?", "Le paiement se fait à la livraison. Aucun paiement n’est demandé au moment de la commande."],
     ["La livraison est-elle gratuite partout au Maroc ?", freeShip ? "Oui : sur cette page, la livraison est offerte partout au Maroc, pour les cinq modèles Z’man." : "Les frais de livraison dépendent de votre ville et sont confirmés avant l’expédition."],

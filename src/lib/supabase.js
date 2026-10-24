@@ -56,3 +56,13 @@ export async function placeOrder(customer, ids, promo, signal) {
     throw e;
   }
 }
+
+/**
+ * Lit un code promo dans la base (fonction publique `apply_promo`, la même que le panier de la boutique).
+ * Renvoie { percent, discount } si le code est actif ET valable pour ces produits, sinon null.
+ * `discount` = montant de la réduction (MAD) calculé par le serveur pour exactement ces articles.
+ */
+export async function checkPromo(code, ids, signal) {
+  var r = await rpc("apply_promo", { p_code: code, p_items: toItems(ids) }, signal);
+  return r && r.percent > 0 ? { percent: Number(r.percent), discount: Number(r.discount) || 0 } : null;
+}
