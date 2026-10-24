@@ -20,7 +20,7 @@ export const config = {
    * ------------------------------------------------------------------ */
   offers: [
     { id: "simple", qty: 1, title: "L’Élégance Simple.", discountPercent: 0, code: "", badge: "", defaultSelected: true },
-    // Duo retiré du formulaire : le 2e sac est proposé uniquement sur la page « offre exclusive » (upsell) après la commande.
+    { id: "duo", qty: 2, title: "Le Duo Signature", discountPercent: 10, code: "BAG23", badge: "Recommandé" },
   ],
 
   /* ------------------------------------------------------------------ *
@@ -41,16 +41,16 @@ export const config = {
    * 1 quater. UPSELL après commande (2e sac à prix réduit, durée limitée)
    *   Déclenché UNIQUEMENT si la cliente a choisi l'offre `triggerOfferId` et validé le formulaire.
    *   Le compte à rebours est réel : l'échéance est mémorisée (un rechargement ne le remet pas à zéro)
-   *   `code` : code promo Supabase qui donne la réduction de l'upsell. La base ne sait pas réduire un seul sac :
-   *   tant que `code` est vide, l'upsell n'est proposé qu'en mode démonstration.
+   *   `code` : code promo Supabase qui donne la réduction de l'upsell. Le code doit avoir `second_item_only = true`
+   *   (voir apply_promo) pour ne réduire que le 2e sac.
    * ------------------------------------------------------------------ */
   upsell: {
     enabled: true,
     triggerOfferId: "simple",
     discountPercent: 25, // 2e sac : 549 − 25 % = 411,75 → 411 MAD (arrondi inférieur) ; 1er + 2e sac = 960 MAD
     durationSeconds: 300, // 5 minutes
-    orderPercent: 10, // estimation affichée si la base ne confirme pas (encore) le code ci-dessous
-    code: "GIFT64", // code promo Supabase : la base l'applique sur toute la commande de 2 sacs ; % et montant lus en base
+    orderPercent: 20, // estimation affichée si la base ne confirme pas (encore) le code ci-dessous
+    code: "GIFT64", // code promo Supabase « second_item_only » : ne réduit que le 2e sac (dernier article envoyé) ; % et montant lus en base
   },
 
   /* ------------------------------------------------------------------ *
