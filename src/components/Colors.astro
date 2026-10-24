@@ -1,0 +1,22 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="colors" id="colors" aria-labelledby="h-colors">
+      <h2 id="h-colors">Votre Z’man. Votre signature.</h2>
+      <p class="muted center">Cinq modèles, un même prix. Choisissez celui qui vous ressemble.</p>
+      <div class="color-grid" id="color-grid">
+      {P.map((p) => (
+        <article class="color-card" data-id={p.id}>
+          <img src={p.thumb} alt={p.images[0].alt} loading="lazy" width="400" height="400" />
+          <div class="cc-body">
+            <p class="cc-name">{p.name}</p>
+            <p class="cc-tag">{p.tagline}</p>
+            <p class="cc-price" set:html={money(p.price)} />
+            <button type="button" class="cc-btn" data-id={p.id} aria-label={`Choisir : ${p.name}`}>Choisir ce modèle</button>
+          </div>
+        </article>
+      ))}
+    </div>
+    </section>

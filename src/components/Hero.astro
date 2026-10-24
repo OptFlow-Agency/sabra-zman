@@ -1,0 +1,55 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="hero" id="hero" aria-labelledby="h1">
+      <div class="hero-gallery" aria-label="Galerie photo du modèle sélectionné">
+        <div class="g-main">
+          <span class="best-badge" id="best-badge" hidden><svg viewBox="0 0 20 20" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M10 1.6l2.5 5.3 5.8.7-4.3 4 1.1 5.7L10 14.4l-5.1 2.9L6 11.6 1.7 7.6l5.8-.7z"/></svg><span id="best-badge-text"></span></span>
+          <div class="g-track" id="g-track" tabindex="0" aria-roledescription="carrousel" aria-label="Photos du sac"></div>
+          <button class="g-nav g-prev" id="g-prev" type="button" aria-label="Photo précédente">‹</button>
+          <button class="g-nav g-next" id="g-next" type="button" aria-label="Photo suivante">›</button>
+          <div class="g-count" id="g-count" aria-live="polite"></div>
+        </div>
+
+        <fieldset class="swatches">
+          <legend>Choisir le modèle : <strong id="swatch-current"></strong></legend>
+          <div class="swatch-list" id="swatch-list">
+            {P.map((p) => (
+              <div class="sw">
+                <input type="radio" name="swatch" id={`sw-${p.id}`} value={p.id} aria-label={p.name} />
+                <label for={`sw-${p.id}`}><img src={p.thumb} alt="" width="80" height="80" loading="lazy" /><span>{p.colorLabel}</span></label>
+              </div>
+            ))}
+          </div>
+        </fieldset>
+        <div class="g-thumbs" id="g-thumbs" role="group" aria-label="Photos du modèle sélectionné"></div>
+      </div>
+
+      <div class="hero-panel">
+        <p class="eyebrow">COLLECTION Z’MAN · MAISON SABRA</p>
+        <h1 id="h1">L’élégance marocaine, dans chaque détail.</h1>
+        <p class="lede">Des textures précieuses, des détails dorés et une inspiration marocaine qui donne du caractère à votre style.</p>
+
+        <div class="product-live" aria-live="polite">
+          <p class="product-name" id="p-name"></p>
+          <p class="product-tagline" id="p-tagline"></p>
+          <p class="product-blurb" id="p-blurb"></p>
+        </div>
+
+        <p class="price-row">
+          <span class="price" id="p-price" set:html={money(P[0].price)} />
+          <s class="ref-price" id="p-ref" hidden></s>
+          <span class="trust-proof" id="trust-proof" hidden>
+            <span class="tp-stars" aria-hidden="true">★★★★★ <b id="tp-rating"></b></span>
+            <span class="tp-count" id="tp-count"></span>
+            <span class="tp-sold" id="tp-sold"></span>
+          </span>
+        </p>
+
+        <a class="btn btn-primary" id="hero-cta" href="#order" data-cta="hero">CHOISIR MON SAC Z’MAN</a>
+        <p class="trust-line"><span>{shipShort}</span></p>
+        <a class="anchor-link" href="#details">Découvrir les détails</a>
+      </div>
+    </section>

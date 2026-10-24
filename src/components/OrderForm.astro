@@ -1,0 +1,77 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="order" id="order" aria-labelledby="h-order">
+      <div class="order-wrap">
+        <div class="order-head">
+          <h2 id="h-order">Réservez votre pièce unique.</h2>
+          <p class="muted">Choisissez votre offre et vos couleurs, renseignez vos coordonnées et recevez votre commande avec paiement à la livraison.</p>
+        </div>
+
+        <form id="order-form" novalidate autocomplete="on" onsubmit="return window.zmanFormFallback ? window.zmanFormFallback(event) : false">
+          <div class="form-alert" id="form-alert" role="alert" tabindex="-1" hidden></div>
+
+          <!-- Offre (boutons radio) — rendu par js/app.js depuis ZMAN_CONFIG.offers ; l'offre 1 est cochée par défaut -->
+          <fieldset class="offer-set" id="offer-set">
+            <legend>1. Choisissez votre offre</legend>
+            <div class="offer-list" id="offer-list"></div>
+            <p class="err" id="e-offer" hidden></p>
+          </fieldset>
+
+          <!-- Couleurs : 1 sélecteur (offre 1) ou 2 sélecteurs indépendants (offre 2) — rendus par js/app.js -->
+          <div class="bag-pickers" id="bag-pickers"></div>
+
+          <div class="summary" id="summary" aria-live="polite">
+            <p class="summary-title">Récapitulatif</p>
+            <ul class="summary-items" id="s-items"></ul>
+            <dl class="totals">
+              <div id="t-sub-row" hidden><dt>Sous-total</dt><dd id="t-sub"></dd></div>
+              <div id="t-disc-row" class="t-disc" hidden><dt id="t-disc-label">Réduction</dt><dd id="t-disc"></dd></div>
+              <div><dt>Livraison</dt><dd id="t-ship"></dd></div>
+              <div class="t-total"><dt>Total à payer</dt><dd id="t-total"></dd></div>
+              <div><dt>Paiement</dt><dd>À la livraison (espèces)</dd></div>
+            </dl>
+          </div>
+
+          <div class="field">
+            <label for="f-name">Nom complet</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="e-fullName">
+            <p class="err" id="e-fullName" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-phone">Numéro de téléphone</label>
+            <input id="f-phone" name="tel" type="tel" inputmode="tel" autocomplete="tel" placeholder="06 12 34 56 78" required aria-describedby="e-phone">
+            <p class="err" id="e-phone" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-city">Ville</label>
+            <input id="f-city" name="city" type="text" list="cities" autocomplete="address-level2" required aria-describedby="e-city">
+            <datalist id="cities">{cities.map((c) => <option value={c} />)}</datalist>
+            <p class="err" id="e-city" hidden></p>
+          </div>
+          <div class="field">
+            <label for="f-address">Adresse de livraison</label>
+            <textarea id="f-address" name="address" rows="2" autocomplete="street-address" required aria-describedby="e-address"></textarea>
+            <p class="err" id="e-address" hidden></p>
+          </div>
+          <details class="acc acc-inline">
+            <summary>Ajouter une précision pour la livraison (facultatif)</summary>
+            <div class="field">
+              <label for="f-notes">Repère, quartier, instructions</label>
+              <textarea id="f-notes" name="notes" rows="2" maxlength="300"></textarea>
+            </div>
+          </details>
+
+          <!-- piège à robots : doit rester vide -->
+          <div class="hp" aria-hidden="true"><label>Ne pas remplir <input type="text" name="website" id="f-hp" tabindex="-1" autocomplete="off"></label></div>
+
+          <button class="btn btn-primary btn-block" id="submit-btn" type="submit">CONFIRMER MA COMMANDE</button>
+          <p class="trust-line">{shipShort}</p>
+          <p class="legal">En confirmant, vous autorisez Maison Sabra à utiliser ces informations pour traiter et livrer votre commande.
+            <a target="_blank" rel="noopener" href={C.links.privacy}>Politique de confidentialité</a></p>
+        </form>
+
+      </div>
+    </section>

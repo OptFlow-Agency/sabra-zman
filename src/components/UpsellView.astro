@@ -1,0 +1,49 @@
+<section class="view" id="view-upsell" hidden aria-labelledby="up-title">
+    <div class="sim-banner" id="up-sim" hidden role="note">MODE DÉMONSTRATION — cette commande n’a pas été enregistrée (aucun serveur connecté).</div>
+    <div class="up-timer" id="up-timer" role="timer" aria-label="Temps restant pour l’offre exclusive">
+      <span class="up-timer-row"><span>Offre exclusive · se termine dans</span> <strong id="up-clock">05:00</strong></span>
+      <span class="up-progress" aria-hidden="true"><i id="up-bar"></i></span>
+    </div>
+    <header class="view-head"><img src="/assets/logo-ms.webp" width="32" height="32" alt=""><span class="brand-word">Maison Sabra</span></header>
+
+    <div class="view-wrap" id="up-live">
+      <p class="eyebrow center">Offre exclusive · réservée à votre commande</p>
+      <h1 id="up-title" tabindex="-1" class="center">Un 2<sup>e</sup> sac Z’man à <span id="up-pct">−25&nbsp;%</span>, rien que pour vous.</h1>
+      <p class="muted center up-lede">Votre commande est prête. Offrez-vous (ou offrez) une deuxième pièce à prix réduit, uniquement pendant la durée du compte à rebours.</p>
+
+      <div class="up-current" id="up-current"></div>
+
+      <fieldset class="up-choices">
+        <legend>Choisissez la couleur de votre 2<sup>e</sup> sac</legend>
+        <div class="up-grid" id="up-grid"></div>
+        <p class="err" id="e-up" hidden></p>
+      </fieldset>
+
+      <div class="summary up-summary" aria-live="polite">
+        <p class="summary-title">Votre commande mise à jour</p>
+        <ul class="summary-items" id="up-items"></ul>
+        <dl class="totals">
+          <div><dt>Sous-total</dt><dd id="up-sub"></dd></div>
+          <div class="t-disc"><dt id="up-disc-label">Offre exclusive</dt><dd id="up-disc"></dd></div>
+          <div><dt>Livraison</dt><dd id="up-ship"></dd></div>
+          <div class="t-total"><dt>Nouveau total à payer</dt><dd id="up-total"></dd></div>
+          <div><dt>Paiement</dt><dd>À la livraison (espèces)</dd></div>
+        </dl>
+      </div>
+      <div class="form-alert" id="up-alert" role="alert" tabindex="-1" hidden></div>
+      <p class="up-decline-wrap"><button type="button" class="btn btn-decline" id="up-decline">Non merci, continuer sans cette offre</button><small>Votre commande reste inchangée.</small></p>
+    </div>
+
+    <div class="view-wrap up-expired" id="up-expired" hidden>
+      <p class="eyebrow center">Offre terminée</p>
+      <h1 class="center" tabindex="-1" id="up-expired-title">Cette offre exclusive a expiré.</h1>
+      <p class="muted center">Pas d’inquiétude : votre commande reste enregistrée telle quelle.</p>
+      <p class="center"><button type="button" class="btn btn-primary" id="up-continue">CONTINUER</button></p>
+    </div>
+
+    <div class="up-bar" id="up-bar-cta">
+      <div class="up-bar-total"><small>Nouveau total</small><strong id="up-bar-amount"></strong></div>
+      <button type="button" class="btn btn-primary" id="up-accept">AJOUTER CE SAC</button>
+      <button type="button" class="up-bar-decline" id="up-decline-2">Non merci, continuer sans cette offre</button>
+    </div>
+  </section>

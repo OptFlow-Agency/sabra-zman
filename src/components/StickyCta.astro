@@ -1,0 +1,9 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<div class="sticky-cta" id="sticky-cta" hidden>
+    <div class="sticky-price"><span class="js-price" set:html={money(P[0].price)} /><small>{shipMicro}</small></div>
+    <a class="btn btn-primary" href="#order" data-cta="sticky">CHOISIR MON SAC Z’MAN</a>
+  </div>

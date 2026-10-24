@@ -1,0 +1,17 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<footer class="site-footer">
+    <p><strong>Maison Sabra</strong> — créations artisanales inspirées du patrimoine marocain.</p>
+    <p class="small">
+      <a target="_blank" rel="noopener" href={C.links.delivery}>Livraison</a> ·
+      <a target="_blank" rel="noopener" href={C.links.returns}>Retours</a> ·
+      <a target="_blank" rel="noopener" href={C.links.privacy}>Confidentialité</a> ·
+      <a target="_blank" rel="noopener" href={C.links.policies}>Nos politiques</a>
+    </p>
+    <p class="small"><a href={C.contact.instagram} rel="noopener" target="_blank">Instagram @maison.sabra</a></p>
+    <p class="small"><span><a href={`tel:${C.contact.phoneTel}`}>{C.contact.phoneDisplay}</a></span> · <span><a href={`mailto:${C.contact.email}`}>{C.contact.email}</a></span></p>
+    <p class="small">© 2026 Maison Sabra</p>
+  </footer>

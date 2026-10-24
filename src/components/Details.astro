@@ -1,0 +1,19 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="details" id="details" aria-labelledby="h-details">
+      <h2 id="h-details">Tout ce qu’il faut savoir, sans surprise.</h2>
+      <p class="muted">Informations du modèle sélectionné : <strong id="d-model"></strong></p>
+      <dl class="specs" id="specs"></dl>
+      <details class="acc">
+        <summary>Description officielle du modèle</summary>
+        <p id="d-official"></p>
+      </details>
+      <details class="acc">
+        <summary>Ce que vous souhaitez y ranger ?</summary>
+        <p>Le sac mesure <span class="js-dims">{P[0].dimensions}</span>. Pour une précision sur ce qui peut y tenir, écrivez-nous : nous vous répondrons.
+          <a class="js-wa-link" href={waHref("Bonjour Maison Sabra, j’ai une question sur le sac Z’man.")} rel="noopener">Écrire sur WhatsApp</a></p>
+      </details>
+    </section>

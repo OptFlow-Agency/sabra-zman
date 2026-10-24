@@ -1,0 +1,13 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="faq" id="faq" aria-labelledby="h-faq">
+      <h2 id="h-faq">Questions fréquentes.</h2>
+      <div id="faq-list">
+      {faqItems().map(([q, a]) => (
+        <details><summary>{q}</summary><p set:html={a} /></details>
+      ))}
+    </div>
+    </section>

@@ -1,0 +1,14 @@
+---
+import { config as C } from "../data/config.js";
+import { products as P } from "../data/products.js";
+import { money, shipLong, shipShort, shipMicro, waHref, cities, faqItems } from "../lib/copy.js";
+---
+<section class="closing" aria-labelledby="h-closing">
+      <img src="/assets/closing-collection-zman.webp" alt="La collection Z’man est de retour : cinq sacs en velours et dorures (vert, vert d’eau, violet, multicolore, rouge) dans un salon marocain" loading="lazy" decoding="async" width="1080" height="1080" class="closing-img">
+      <div class="closing-copy">
+        <h2 id="h-closing">Une touche marocaine. Une élégance qui vous ressemble.</h2>
+        <p>Découvrez le modèle Z’man qui accompagne votre style, des belles occasions aux soirées que vous choisissez de rendre inoubliables.</p>
+        <p class="closing-price"><strong class="js-price" set:html={money(P[0].price)} /> · <span>{shipShort}</span></p>
+        <a class="btn btn-light" href="#order" data-cta="closing">CHOISIR MON Z’MAN</a>
+      </div>
+    </section>

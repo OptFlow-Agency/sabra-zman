@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "project": "Maison Sabra · Collection Z’man · section « Trois moments, une signature »",
+    "usage": "À utiliser avec un générateur d'images qui accepte une image de référence (image-to-image / reference). Joindre la photo réelle indiquée dans `reference_image` : le sac doit rester IDENTIQUE à cette photo.",
+    "output": { "aspect_ratio": "4:5", "size_px": "1200x1500", "format": "webp (qualité 82, < 150 Ko si possible)" },
+    "global_rules": [
+      "Le sac généré doit être une copie fidèle de la photo de référence : mêmes couleurs, même motif en relief, même forme, même fermoir, même chaîne. Ne jamais inventer un autre modèle ni une autre couleur.",
+      "Dimensions réelles du sac : L 28 × H 20 × P 7 cm, environ 350 g. Il tient dans une main comme pochette ou se porte à l'épaule/en bandoulière : respecter cette échelle par rapport au corps (ne pas le rendre plus grand qu'une pochette de soirée).",
+      "Mannequin fictif : aucune ressemblance avec une personne réelle, aucun logo ni texte visible, aucune autre marque.",
+      "Photoréalisme éditorial de mode : peau naturelle, mains anatomiquement correctes (5 doigts), chaîne dorée avec maillons nets et un seul trajet cohérent.",
+      "Vérifier chaque image avant publication : bag fidelity, mains, chaîne, absence de texte parasite."
+    ]
+  },
+  "images": [
+    {
+      "id": "moment-1",
+      "card": "01 · Les grandes occasions — « Pour les célébrations qui restent dans les souvenirs. »",
+      "file": "assets/moments/moment-1.webp",
+      "reference_image": "assets/violet-2.webp (Sac Z’man – Violet Royal & Doré en Velours Relief)",
+      "prompt": {
+        "subject": "Une femme élégante tient le sac Z’man violet royal en pochette devant elle, chaîne dorée détachée et repliée dans la paume, lors d'une célébration familiale marocaine.",
+        "model": {
+          "age_range": "30-40",
+          "look": "cheveux sombres coiffés en chignon bas, maquillage doux et lumineux, expression sereine, regard légèrement hors cadre",
+          "outfit": "caftan marocain en satin ivoire et or, finitions brodées discrètes aux manches, ceinture dorée fine",
+          "jewelry": "boucles d'oreilles dorées fines, un bracelet jonc doré"
+        },
+        "bag": {
+          "model": "Z’man violet royal, velours en relief violet profond sur tissu doré",
+          "details": "fermoir métallique doré vintage visible, motifs baroques en relief, chaîne dorée détachée enroulée dans la main (ou la chaîne retombant naturellement)",
+          "how_carried": "tenu à deux mains à hauteur de la taille, comme une pochette de cérémonie, bien visible et net"
+        },
+        "scene": "salon marocain de réception : zellige en arrière-plan flou, arche en plâtre sculpté, lanternes en laiton, banquette ivoire, quelques coussins brodés ; moment de fête calme (pas de foule, pas de visages d'autres personnes nets)",
+        "composition": "plan américain (de la tête aux cuisses), sujet légèrement décalé à gauche, le sac dans le tiers inférieur droit, profondeur de champ moyenne, le sac et le caftan nets",
+        "camera": "photographie éditoriale, objectif 85 mm, f/2.2, hauteur des yeux, léger contre-jour doux",
+        "lighting": "lumière chaude de fin d'après-midi par une fenêtre latérale, ombres douces, reflets dorés sur le velours",
+        "palette": "violet profond, or chaud, ivoire, touches terre cuite",
+        "mood": "élégant, chaleureux, mémorable, authentique",
+        "style": "photographie de mode réaliste, grain fin, couleurs naturelles"
+      },
+      "negative_prompt": "texte, logo, filigrane, autre marque de sac, sac trop grand, couleur du sac modifiée, motif du sac modifié, mains déformées, doigts en trop, chaîne qui se dédouble, visage déformé, look cartoon, 3D, sur-saturation, peau lisse artificielle, foule nette, enfant"
+    },
+    {
+      "id": "moment-2",
+      "card": "02 · Les soirées et les dîners — « Pour ces soirées où chaque détail compte. »",
+      "file": "assets/moments/moment-2.webp",
+      "reference_image": "assets/beige-2.webp (Sac Z’man – Velours Beige Brodé Doré)",
+      "prompt": {
+        "subject": "Une femme à l'entrée d'un restaurant chic le soir, portant le sac Z’man beige brodé de fils dorés à l'épaule par sa chaîne dorée.",
+        "model": {
+          "age_range": "28-38",
+          "look": "cheveux longs lissés, maquillage de soirée sobre, léger sourire, regard vers l'objectif",
+          "outfit": "robe de soirée longue noire fluide à manches longues et décolleté en V sobre",
+          "jewelry": "petites boucles d'oreilles dorées, bague discrète"
+        },
+        "bag": {
+          "model": "Z’man beige, velours beige brodé de fils dorés, forme arrondie",
+          "details": "fermoir métallique doré, chaîne dorée légère portée sur l'épaule, broderies dorées nettes en relief",
+          "how_carried": "chaîne sur l'épaule, le sac posé contre la hanche, une main reposant légèrement sur le sac"
+        },
+        "scene": "terrasse ou entrée d'un restaurant en soirée : lanternes allumées, mur en tadelakt chaud, plantes, lumière d'ambiance ; arrière-plan flou, aucun client net",
+        "composition": "plan taille, sujet de trois quarts, le sac au centre-droit, bokeh de lumières chaudes derrière",
+        "camera": "photographie éditoriale nocturne, objectif 50 mm, f/1.8, ISO modéré, mise au point sur le sac et la main",
+        "lighting": "lumière d'ambiance chaude des lanternes + léger appoint doux sur le visage, reflets dorés sur les broderies",
+        "palette": "noir profond, beige doré, ambre, touches de bronze",
+        "mood": "raffiné, intime, confiant",
+        "style": "photographie de mode de soirée réaliste, grain fin, contraste doux"
+      },
+      "negative_prompt": "texte, logo, filigrane, autre marque de sac, couleur du sac modifiée, broderie modifiée, sac surdimensionné, mains déformées, chaîne dédoublée, visage déformé, cartoon, 3D, flash dur, bouteilles ou marques lisibles, clients nets au fond"
+    },
+    {
+      "id": "moment-3",
+      "card": "03 · Votre propre style — « Parce que l’élégance n’attend pas une invitation. »",
+      "file": "assets/moments/moment-3.webp",
+      "reference_image": "assets/multicolore-1.jpg (Sac Z’man – Tissu Velours Multicolore & Dorures)",
+      "prompt": {
+        "subject": "Une jeune femme dans une rue ensoleillée de médina, portant le sac Z’man multicolore en bandoulière avec une tenue contemporaine simple.",
+        "model": {
+          "age_range": "25-35",
+          "look": "cheveux bruns mi-longs naturels, lunettes de soleil relevées, sourire spontané, en marche",
+          "outfit": "blazer oversize crème, tee-shirt blanc, jean droit taille haute, baskets blanches minimalistes",
+          "jewelry": "créoles dorées fines"
+        },
+        "bag": {
+          "model": "Z’man multicolore, velours rouge, ocre, beige et noir avec dorures artistiques",
+          "details": "fermoir métallique doré, chaîne dorée portée en bandoulière (croisée sur le torse), motif abstrait doré net",
+          "how_carried": "en bandoulière, le sac contre la hanche, une main tenant légèrement la chaîne"
+        },
+        "scene": "ruelle de médina marocaine en journée : mur ocre/terre cuite, porte en bois cloutée au fond flou, quelques plantes en pot ; passants flous et non identifiables ou absents",
+        "composition": "plan américain en marche, sujet légèrement décentré à droite, le sac visible sur la hanche, profondeur de champ moyenne",
+        "camera": "photographie de rue éditoriale, objectif 35 mm, f/2.8, légère contre-plongée naturelle",
+        "lighting": "soleil de milieu de matinée, lumière directionnelle douce, ombres nettes mais agréables, reflets dorés sur la chaîne",
+        "palette": "terre cuite, crème, bleu délavé du jean, touches rouges et dorées du sac",
+        "mood": "spontané, moderne, libre, élégant sans effort",
+        "style": "photographie de style de rue réaliste, couleurs naturelles, grain fin"
+      },
+      "negative_prompt": "texte, logo, filigrane, autre marque de sac, couleur du sac modifiée, motif du sac modifié, sac trop grand, mains déformées, chaîne dédoublée, visage déformé, cartoon, 3D, filtre vintage excessif, panneaux ou enseignes lisibles, foule nette"
+    }
+  ]
+}
