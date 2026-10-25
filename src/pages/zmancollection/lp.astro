@@ -1,0 +1,58 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Hero from "../../components/Hero.astro";
+import Finish from "../../components/Finish.astro";
+import Moments from "../../components/Moments.astro";
+import Story from "../../components/Story.astro";
+import Details from "../../components/Details.astro";
+import Colors from "../../components/Colors.astro";
+import Reels from "../../components/Reels.astro";
+import OrderForm from "../../components/OrderForm.astro";
+import Faq from "../../components/Faq.astro";
+import Closing from "../../components/Closing.astro";
+import SiteFooter from "../../components/SiteFooter.astro";
+import StickyCta from "../../components/StickyCta.astro";
+import UpsellView from "../../components/UpsellView.astro";
+import ThanksView from "../../components/ThanksView.astro";
+import { shipLong } from "../../lib/copy.js";
+---
+<Layout>
+  <a class="skip" href="#hero">Aller au contenu</a>
+
+  <div class="demo-ribbon" id="demo-ribbon" hidden role="note">
+    MODE DÉMONSTRATION — aucune commande n’est enregistrée tant que les variables <code>PUBLIC_SUPABASE_*</code> ne sont pas configurées.
+  </div>
+
+  <div class="announce" role="note"><span>{shipLong}</span></div>
+
+  <header class="site-header">
+    <a class="brand" href="https://maisonsabra.ma/" aria-label="Maison Sabra — accueil du site officiel">
+      <img src="/assets/logo-ms.webp" width="36" height="36" alt="" class="brand-mark" />
+      <span class="brand-word">Maison Sabra</span>
+    </a>
+    <span class="collection-label">Collection Z’man</span>
+    <a class="support-link" id="support-link" href="#faq">Aide</a>
+  </header>
+
+  <main id="main">
+    <Hero />
+    <Finish />
+    <Moments />
+    <Story />
+    <Details />
+    <Colors />
+    <Reels />
+    <OrderForm />
+    <Faq />
+    <Closing />
+  </main>
+
+  <SiteFooter />
+  <StickyCta />
+  <UpsellView />
+  <ThanksView />
+
+  <script>
+    import "../../scripts/app.js";
+  </script>
+</Layout>
