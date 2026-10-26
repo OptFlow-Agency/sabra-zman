@@ -31,3 +31,16 @@ Aucun `Lead`/`Purchase` n'est émis en mode démonstration (sans endpoint). Le P
 - **Meta Conversions API** : jeton d'accès du Pixel (Gestionnaire d'événements → Paramètres → Générer un jeton) → propriété de script `META_CAPI_TOKEN`. Sans lui, seul le Pixel navigateur fonctionne.
 - **WhatsApp automatique** : compte WhatsApp Business Cloud API, numéro vérifié, **modèle de message approuvé par Meta** (2 variables : prénom, réf.) → propriétés `WA_TOKEN`, `WA_PHONE_ID`, `WA_TEMPLATE`. Sans elles, aucun message n'est envoyé (la colonne « WhatsApp envoyé » reste vide).
 - Vérifier que collecter nom, téléphone et adresse dans un Sheet est couvert par votre politique de confidentialité (loi 09-08) et limiter l'accès au Sheet aux personnes qui appellent.
+
+## Meta Conversions API (Supabase Edge Function)
+
+Le site envoie les événements standard (`PageView`, `ViewContent`, `InitiateCheckout`, `Lead`, `Purchase`) à la fonction `supabase/functions/meta-capi`, avec le **même `event_id`** que le Pixel (déduplication). Le jeton reste dans les secrets Supabase ; le navigateur n'envoie que des empreintes SHA-256 (téléphone, prénom, nom, ville) + `fbp`/`fbc`. IP et user-agent sont ajoutés par la fonction.
+
+```bash
+supabase secrets set META_CAPI_TOKEN=<jeton> --project-ref <ref>
+supabase secrets set META_TEST_EVENT_CODE=TEST12345 --project-ref <ref>   # temporaire : onglet « Tester les événements »
+supabase secrets set ALLOWED_ORIGINS=https://votre-domaine --project-ref <ref>   # recommandé
+supabase functions deploy meta-capi --no-verify-jwt --project-ref <ref>
+```
+
+Vérifier dans Events Manager : chaque événement apparaît « Navigateur + Serveur » (dédupliqué). Retirer `META_TEST_EVENT_CODE` avant le lancement.

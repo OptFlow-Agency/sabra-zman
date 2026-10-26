@@ -374,11 +374,16 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
     var ctrl = new AbortController(), to = setTimeout(function () { ctrl.abort(); }, C.order.timeoutMs);
     placeOrder(s.customer, s.bags, promo || null, ctrl.signal).then(function (r) {
       clearTimeout(to); finalizing = false;
+      var cust = s.customer;
       s.placed = true; s.orderRef = r.orderNumber; s.customer = null; // les coordonnées ne restent pas dans le navigateur
       saveSession();
       var ft = finalTotals(s);
-      A.track("Lead", { content_ids: s.bags.map(function (id) { return String(byId(id).wooProductId); }), content_name: s.offerTitle, content_type: "product", value: ft.total, currency: C.currency, num_items: s.bags.length });
-      go("thanks");
+      // Empreintes SHA-256 (jamais les données en clair) conservées pour l'API Conversions : Lead maintenant, Purchase plus tard.
+      A.hashUser(cust).then(function (u) {
+        s.mUser = u; saveSession();
+        A.track("Lead", { content_ids: s.bags.map(function (id) { return String(byId(id).wooProductId); }), content_name: s.offerTitle, content_type: "product", value: ft.total, currency: C.currency, num_items: s.bags.length }, { user: u });
+        go("thanks");
+      });
     }).catch(function (e) {
       clearTimeout(to); finalizing = false;
       onError(e && e.code === "invalid_promo" ? "Le code de l’offre n’est plus valide, votre commande n’a pas été enregistrée."
@@ -642,7 +647,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
         // PURCHASE : la cliente a rempli le formulaire, il a été accepté, et elle atteint la page de remerciement.
         // Une seule fois par commande ; montant final (upsell inclus) ; aucune donnée personnelle ; eventID déterministe (déduplication CAPI).
         var pid = "purchase-" + s.clientOrderId;
-        A.track("Purchase", { content_ids: s.bags.map(function (id) { return String(byId(id).wooProductId); }), content_type: "product", num_items: s.bags.length, value: ft.total, currency: C.currency }, { eventId: pid });
+        A.track("Purchase", { content_ids: s.bags.map(function (id) { return String(byId(id).wooProductId); }), content_type: "product", num_items: s.bags.length, value: ft.total, currency: C.currency }, { eventId: pid, user: s.mUser });
       }
     }
     try { $("#ty-title").focus({ preventScroll: true }); } catch (e) {}
