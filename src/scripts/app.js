@@ -638,7 +638,7 @@ import { freeShip, shipFrag, noDot, esc, waHref } from "../lib/copy.js";
       step("Vous payez à la réception", "Le règlement se fait en espèces, à la livraison. Aucun paiement en ligne n’est demandé.");
     $("#ty-help").innerHTML = 'Une question ? <a href="' + waHref("Bonjour Maison Sabra, j’ai une question sur ma commande Z’man.") + '" rel="noopener">WhatsApp</a> · <a href="tel:' + C.contact.phoneTel + '">' + C.contact.phoneDisplay + "</a>. Un souci à la réception ? Voir la " +
       '<a href="' + C.links.returns + '" target="_blank" rel="noopener">politique de retours</a>.';
-    $("#ty-back").href = C.links.collection;
+    $("#ty-back").href = location.pathname;
     if (!s.thanksViewed) {
       s.thanksViewed = true; saveSession();
       var ft = finalTotals(s);

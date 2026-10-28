@@ -44,3 +44,19 @@ supabase functions deploy meta-capi --no-verify-jwt --project-ref <ref>
 ```
 
 Vérifier dans Events Manager : chaque événement apparaît « Navigateur + Serveur » (dédupliqué). Retirer `META_TEST_EVENT_CODE` avant le lancement.
+
+## E-mail admin à chaque nouvelle commande (Resend)
+
+La fonction `supabase/functions/notify-order` envoie un e-mail à l'admin via Resend. Elle est déclenchée par un **Database Webhook** sur `INSERT` dans `public.orders` (déclenché après le commit : les `order_items` existent déjà).
+
+```bash
+supabase secrets set RESEND_API_KEY=<clé> ADMIN_EMAIL=admin@exemple.com WEBHOOK_SECRET=<secret-aléatoire> --project-ref <ref>
+supabase secrets set RESEND_FROM="Maison Sabra <commandes@votre-domaine>" --project-ref <ref>   # après vérification du domaine dans Resend
+supabase functions deploy notify-order --no-verify-jwt --project-ref <ref>
+```
+
+Boutons de l'e-mail (optionnels, masqués si absents) : `supabase secrets set ADMIN_URL=https://<votre-dashboard> ADMIN_PRODUCTS_URL=https://<votre-dashboard>/products --project-ref <ref>` (sans `ADMIN_PRODUCTS_URL`, le lien produits est `ADMIN_URL` + `/products`).
+
+Puis Supabase → Database → Webhooks → Create : table `orders`, événement `Insert`, type « Supabase Edge Functions » → `notify-order`, méthode `POST`, en-tête HTTP `x-webhook-secret: <secret-aléatoire>`.
+
+Sans domaine vérifié, Resend n'autorise l'expéditeur `onboarding@resend.dev` qu'à écrire à l'adresse du compte Resend.
